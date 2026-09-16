@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Job Finder - Search and filter tech jobs across multiple job platforms." />
+  <title>Job Finder | Tech Jobs</title>
+  <style>
+    :root {
+      --bg: #f7f9fc;
+      --surface: #ffffff;
+      --surface-2: #f1f5f9;
+      --text: #101828;
+      --muted: #667085;
+      --border: #e4e7ec;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --success: #0f9f6e;
+      --shadow: 0 10px 35px rgba(16,24,40,.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #eff6ff 0%, var(--bg) 320px);
+      color: var(--text);
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button, input, select { font: inherit; }
+
+    .container {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .hero {
+      padding: 56px 0 30px;
+    }
+
+    .hero-inner {
+      background: linear-gradient(135deg, #0f172a, #1e3a8a);
+      color: #fff;
+      border-radius: 28px;
+      padding: 44px;
+      box-shadow: 0 20px 55px rgba(15,23,42,.18);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.12);
+      color: #dbeafe;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+
+    .hero h1 {
+      margin: 18px 0 10px;
+      font-size: clamp(38px, 5vw, 64px);
+      line-height: 1;
+      letter-spacing: -.04em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 760px;
+      color: #dbeafe;
+      font-size: 17px;
+      line-height: 1.7;
+    }
+
+    .hero-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .stat {
+      padding: 10px 14px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.08);
+      border-radius: 12px;
+      font-size: 14px;
+    }
+
+    .controls-wrap {
+      margin: 24px 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 12px;
+      z-index: 10;
+      backdrop-filter: blur(10px);
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 2.1fr 1fr 1fr 1fr auto;
+      gap: 12px;
+    }
+
+    .field {
+      position: relative;
+    }
+
+    .field input, .field select {
+      width: 100%;
+      height: 48px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #fff;
+      padding: 0 14px;
+      color: var(--text);
+      outline: none;
+    }
+
+    .field input:focus, .field select:focus {
+      border-color: #93c5fd;
+      box-shadow: 0 0 0 4px #dbeafe;
+    }
+
+    .reset-btn {
+      height: 48px;
+      padding: 0 16px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--surface-2);
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .reset-btn:hover { background: #e2e8f0; }
+
+    .results-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 24px 0 14px;
+    }
+
+    .results-bar h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .results-count {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .jobs-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 16px;
+    }
+
+    .job-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 4px 18px rgba(16,24,40,.05);
+      display: flex;
+      flex-direction: column;
+      min-height: 235px;
+      transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    }
+
+    .job-card:hover {
+      transform: translateY(-3px);
+      border-color: #bfdbfe;
+      box-shadow: 0 14px 34px rgba(16,24,40,.10);
+    }
+
+    .job-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .platform-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .job-id {
+      color: #98a2b3;
+      font-size: 12px;
+    }
+
+    .job-card h3 {
+      margin: 18px 0 10px;
+      font-size: 20px;
+      line-height: 1.25;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .meta span {
+      background: var(--surface-2);
+      color: #475467;
+      padding: 7px 10px;
+      border-radius: 9px;
+      font-size: 13px;
+    }
+
+    .job-desc {
+      margin: 14px 0;
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 14px;
+    }
+
+    .job-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: auto;
+    }
+
+    .view-btn {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 44px;
+      border-radius: 11px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .view-btn:hover { background: var(--primary-dark); }
+
+    .save-btn {
+      width: 44px;
+      height: 44px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    .save-btn.saved {
+      background: #ecfdf3;
+      border-color: #a7f3d0;
+      color: var(--success);
+    }
+
+    .empty {
+      background: #fff;
+      border: 1px dashed var(--border);
+      border-radius: 18px;
+      padding: 48px 24px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .empty h3 {
+      margin: 0 0 8px;
+      color: var(--text);
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 28px 0 48px;
+    }
+
+    .page-btn {
+      min-width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #fff;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .page-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .page-btn:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    footer {
+      padding: 32px 0 56px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 13px;
+    }
+
+    @media (max-width: 980px) {
+      .controls { grid-template-columns: 1fr 1fr; }
+      .jobs-grid { grid-template-columns: 1fr; }
+      .reset-btn { width: 100%; }
+    }
+
+    @media (max-width: 640px) {
+      .container { width: min(100% - 20px, 1180px); }
+      .hero { padding-top: 16px; }
+      .hero-inner { padding: 28px 22px; border-radius: 22px; }
+      .controls-wrap { position: static; }
+      .controls { grid-template-columns: 1fr; }
+      .results-bar { align-items: flex-start; flex-direction: column; }
+      .job-card { min-height: 0; }
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="eyebrow">🚀 TECH JOB FINDER</div>
+        <h1>Find Your Next Tech Job</h1>
+        <p>
+          Search hundreds of technology job opportunities across leading job platforms.
+          Filter by role, location, and platform, then open the live search directly.
+        </p>
+        <div class="hero-stats">
+          <div class="stat"><strong id="totalJobs">500</strong> job searches</div>
+          <div class="stat"><strong>10</strong> platforms</div>
+          <div class="stat">India + Remote</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="controls-wrap" aria-label="Job filters">
+      <div class="controls">
+        <div class="field">
+          <input id="searchInput" type="search" placeholder="Search role, e.g. Java Developer..." />
+        </div>
+
+        <div class="field">
+          <select id="locationFilter">
+            <option value="">All locations</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <select id="platformFilter">
+            <option value="">All platforms</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <select id="roleFilter">
+            <option value="">All roles</option>
+          </select>
+        </div>
+
+        <button class="reset-btn" id="resetBtn">Reset</button>
+      </div>
+    </section>
+
+    <div class="results-bar">
+      <h2>Available Job Searches</h2>
+      <div class="results-count" id="resultsCount"></div>
+    </div>
+
+    <section id="jobsGrid" class="jobs-grid"></section>
+    <div id="emptyState" class="empty" hidden>
+      <h3>No matching jobs found</h3>
+      <p>Try a broader keyword or reset the filters.</p>
+    </div>
+
+    <nav id="pagination" class="pagination" aria-label="Job pages"></nav>
+
+    <footer>
+      Job Finder • Search links open the selected platform's current job results.
+    </footer>
+  </main>
+
+  <script>
+    const jobs = [{"id": 1, "platform": "LinkedIn", "role": "Software Engineer", "location": "India", "url": "https://www.linkedin.com/jobs/search/?keywords=Software+Engineer&location=India"}, {"id": 2, "platform": "LinkedIn", "role": "Software Engineer", "location": "Remote India", "url": "https://www.linkedin.com/jobs/search/?keywords=Software+Engineer&location=Remote+India"}, {"id": 3, "platform": "LinkedIn", "role": "Software Developer", "location": "India", "url": "https://www.linkedin.com/jobs/search/?keywords=Software+Developer&location=India"}, {"id": 4, "platform": "LinkedIn", "role": "Software Developer", "location": "Remote India", "url": "https://www.linkedin.com/jobs/search/?keywords=Software+Developer&location=Remote+India"}, {"id": 5, "platform": "LinkedIn", "role": "Java Developer", "location": "India", "url": "https://www.linkedin.com/jobs/search/?keywords=Java+Developer&location=India"}, {"id": 6, "platform": "LinkedIn", "role": "Java Developer", "location": "Remote India", "url": "https://www.linkedin.com/jobs/search/?keywords=Java+Developer&location=Remote+India"}, {"id": 7, "platform": "LinkedIn", "role": "Spring Boot Developer", "location": "India", "url": "https://www.linkedin.com/jobs/search/?keywords=Spring+Boot+Developer&location=India"}, {"id": 8, "platform": "LinkedIn", "role": "Spring Boot Developer", "location": "Remote India", "url": "https://www.linkedin.com/jobs/search/?keywords=Spring+Boot+Developer&location=Remote+India"}, {"id": 9, "platform": "LinkedIn", "role": "Python Developer", "location": "India", "url": "https://www.linkedin.com/jobs/search/?keywords=Python+Developer&location=India"}, {"id": 10, "platform": "LinkedIn", "role": "Python Developer", "location": "Remote India", "url": "https://www.linkedin.com/jobs/search/?keywords=Python+Developer&location=Remote+India"}, {"id": 11, "platform": "LinkedIn", "role": "Backend Developer", "location": "India", "url": "https://www.linkedin.com/jobs/search/?keywords=Backend+Developer&location=India"}, {"id": 12, "platform": "LinkedIn", "role": "Backend Developer", "location": "Remote India", "url": "https://www.linkedin.com/jobs/search/?keywords=Backend+Developer&location=Remote+India"}, {"id": 13, "platform": "LinkedIn", "role": "Frontend Developer", "location": "India", "url": "https://www.linkedin.com/jobs/search/?keywords=Frontend+Developer&location=India"}, {"id": 14, "platform": "LinkedIn", "role": "Frontend Developer", "location": "Remote India", "url": "https://www.linkedin.com/jobs/search/?keywords=Frontend+Developer&location=Remote+India"}, {"id": 15, "platform": "LinkedIn", "role": "Full Stack Developer", "location": "India", "url": "https://www.linkedin.com/jobs/search/?keywords=Full+Stack+Developer&location=India"}, {"id": 16, "platform": "LinkedIn", "role": "Full Stack Developer", "location": "Remote India", "url": "https://www.linkedin.com/jobs/search/?keywords=Full+Stack+Developer&location=Remote+India"}, {"id": 17, "platform": "LinkedIn", "role": "React Developer", "location": "India", "url": "https://www.linkedin.com/jobs/search/?keywords=React+Developer&location=India"}, {"id": 18, "platform": "LinkedIn", "role": "React Developer", "location": "Remote India", "url": "https://www.linkedin.com/jobs/search/?keywords=React+Developer&location=Remote+India"}, {"id": 19, "platform": "LinkedIn", "role": "Node.js Developer", "location": "India", "url": "https://www.linkedin.com/jobs/search/?keywords=Node.js+Developer&location=India"}, {"id": 20, "platform": "LinkedIn", "role": "Node.js Developer", "location": "Remote India", "url": "https://www.linkedin.com/jobs/search/?keywords=Node.js+Developer&location=Remote+India"}, {"id": 21, "platform": "LinkedIn", "role": "Java Full Stack Developer", "location": "India", "url": "https://www.linkedin.com/jobs/search/?keywords=Java+Full+Stack+Developer&location=India"}, {"id": 22, "platform": "LinkedIn", "role": "Java Full Stack Developer", "location": "Remote India", "url": "https://www.linkedin.com/jobs/search/?keywords=Java+Full+Stack+Developer&location=Remote+India"}, {"id": 23, "platform": "LinkedIn", "role": "QA Tester", "location": "India", "url": "https://www.linkedin.com/jobs/search/?keywords=QA+Tester&location=India"}, {"id": 24, "platform": "LinkedIn", "role": "QA Tester", "location": "Remote India", "url": "https://www.linkedin.com/jobs/search/?keywords=QA+Tester&location=Remote+India"}, {"id": 25, "platform": "LinkedIn", "role": "QA Automation Engineer", "location": "India", "url": "https://www.linkedin.com/jobs/search/?keywords=QA+Automation+Engineer&location=India"}, {"id": 26, "platform": "LinkedIn", "role": "QA Automation Engineer", "location": "Remote India", "url": "https://www.linkedin.com/jobs/search/?keywords=QA+Automation+Engineer&location=Remote+India"}, {"id": 27, "platform": "LinkedIn", "role": "Test Engineer", "location": "India", "url": "https://www.linkedin.com/jobs/search/?keywords=Test+Engineer&location=India"}, {"id": 28, "platform": "LinkedIn", "role": "Test Engineer", "location": "Remote India", "url": "https://www.linkedin.com/jobs/search/?keywords=Test+Engineer&location=Remote+India"}, {"id": 29, "platform": "LinkedIn", "role": "DevOps Engineer", "location": "India", "url": "https://www.linkedin.com/jobs/search/?keywords=DevOps+Engineer&location=India"}, {"id": 30, "platform": "LinkedIn", "role": "DevOps Engineer", "location": "Remote India", "url": "https://www.linkedin.com/jobs/search/?keywords=DevOps+Engineer&location=Remote+India"}, {"id": 31, "platform": "LinkedIn", "role": "Cloud Engineer", "location": "India", "url": "https://www.linkedin.com/jobs/search/?keywords=Cloud+Engineer&location=India"}, {"id": 32, "platform": "LinkedIn", "role": "Cloud Engineer", "location": "Remote India", "url": "https://www.linkedin.com/jobs/search/?keywords=Cloud+Engineer&location=Remote+India"}, {"id": 33, "platform": "LinkedIn", "role": "Data Analyst", "location": "India", "url": "https://www.linkedin.com/jobs/search/?keywords=Data+Analyst&location=India"}, {"id": 34, "platform": "LinkedIn", "role": "Data Analyst", "location": "Remote India", "url": "https://www.linkedin.com/jobs/search/?keywords=Data+Analyst&location=Remote+India"}, {"id": 35, "platform": "LinkedIn", "role": "Data Scientist", "location": "India", "url": "https://www.linkedin.com/jobs/search/?keywords=Data+Scientist&location=India"}, {"id": 36, "platform": "LinkedIn", "role": "Data Scientist", "location": "Remote India", "url": "https://www.linkedin.com/jobs/search/?keywords=Data+Scientist&location=Remote+India"}, {"id": 37, "platform": "LinkedIn", "role": "Machine Learning Engineer", "location": "India", "url": "https://www.linkedin.com/jobs/search/?keywords=Machine+Learning+Engineer&location=India"}, {"id": 38, "platform": "LinkedIn", "role": "Machine Learning Engineer", "location": "Remote India", "url": "https://www.linkedin.com/jobs/search/?keywords=Machine+Learning+Engineer&location=Remote+India"}, {"id": 39, "platform": "LinkedIn", "role": "AI Engineer", "location": "India", "url": "https://www.linkedin.com/jobs/search/?keywords=AI+Engineer&location=India"}, {"id": 40, "platform": "LinkedIn", "role": "AI Engineer", "location": "Remote India", "url": "https://www.linkedin.com/jobs/search/?keywords=AI+Engineer&location=Remote+India"}, {"id": 41, "platform": "LinkedIn", "role": "GenAI Engineer", "location": "India", "url": "https://www.linkedin.com/jobs/search/?keywords=GenAI+Engineer&location=India"}, {"id": 42, "platform": "LinkedIn", "role": "GenAI Engineer", "location": "Remote India", "url": "https://www.linkedin.com/jobs/search/?keywords=GenAI+Engineer&location=Remote+India"}, {"id": 43, "platform": "LinkedIn", "role": "Data Engineer", "location": "India", "url": "https://www.linkedin.com/jobs/search/?keywords=Data+Engineer&location=India"}, {"id": 44, "platform": "LinkedIn", "role": "Data Engineer", "location": "Remote India", "url": "https://www.linkedin.com/jobs/search/?keywords=Data+Engineer&location=Remote+India"}, {"id": 45, "platform": "LinkedIn", "role": "SQL Developer", "location": "India", "url": "https://www.linkedin.com/jobs/search/?keywords=SQL+Developer&location=India"}, {"id": 46, "platform": "LinkedIn", "role": "SQL Developer", "location": "Remote India", "url": "https://www.linkedin.com/jobs/search/?keywords=SQL+Developer&location=Remote+India"}, {"id": 47, "platform": "LinkedIn", "role": "Android Developer", "location": "India", "url": "https://www.linkedin.com/jobs/search/?keywords=Android+Developer&location=India"}, {"id": 48, "platform": "LinkedIn", "role": "Android Developer", "location": "Remote India", "url": "https://www.linkedin.com/jobs/search/?keywords=Android+Developer&location=Remote+India"}, {"id": 49, "platform": "LinkedIn", "role": "Cybersecurity Analyst", "location": "India", "url": "https://www.linkedin.com/jobs/search/?keywords=Cybersecurity+Analyst&location=India"}, {"id": 50, "platform": "LinkedIn", "role": "Cybersecurity Analyst", "location": "Remote India", "url": "https://www.linkedin.com/jobs/search/?keywords=Cybersecurity+Analyst&location=Remote+India"}, {"id": 51, "platform": "Indeed India", "role": "Software Engineer", "location": "India", "url": "https://in.indeed.com/jobs?q=Software+Engineer&l=India"}, {"id": 52, "platform": "Indeed India", "role": "Software Engineer", "location": "Remote India", "url": "https://in.indeed.com/jobs?q=Software+Engineer&l=Remote+India"}, {"id": 53, "platform": "Indeed India", "role": "Software Developer", "location": "India", "url": "https://in.indeed.com/jobs?q=Software+Developer&l=India"}, {"id": 54, "platform": "Indeed India", "role": "Software Developer", "location": "Remote India", "url": "https://in.indeed.com/jobs?q=Software+Developer&l=Remote+India"}, {"id": 55, "platform": "Indeed India", "role": "Java Developer", "location": "India", "url": "https://in.indeed.com/jobs?q=Java+Developer&l=India"}, {"id": 56, "platform": "Indeed India", "role": "Java Developer", "location": "Remote India", "url": "https://in.indeed.com/jobs?q=Java+Developer&l=Remote+India"}, {"id": 57, "platform": "Indeed India", "role": "Spring Boot Developer", "location": "India", "url": "https://in.indeed.com/jobs?q=Spring+Boot+Developer&l=India"}, {"id": 58, "platform": "Indeed India", "role": "Spring Boot Developer", "location": "Remote India", "url": "https://in.indeed.com/jobs?q=Spring+Boot+Developer&l=Remote+India"}, {"id": 59, "platform": "Indeed India", "role": "Python Developer", "location": "India", "url": "https://in.indeed.com/jobs?q=Python+Developer&l=India"}, {"id": 60, "platform": "Indeed India", "role": "Python Developer", "location": "Remote India", "url": "https://in.indeed.com/jobs?q=Python+Developer&l=Remote+India"}, {"id": 61, "platform": "Indeed India", "role": "Backend Developer", "location": "India", "url": "https://in.indeed.com/jobs?q=Backend+Developer&l=India"}, {"id": 62, "platform": "Indeed India", "role": "Backend Developer", "location": "Remote India", "url": "https://in.indeed.com/jobs?q=Backend+Developer&l=Remote+India"}, {"id": 63, "platform": "Indeed India", "role": "Frontend Developer", "location": "India", "url": "https://in.indeed.com/jobs?q=Frontend+Developer&l=India"}, {"id": 64, "platform": "Indeed India", "role": "Frontend Developer", "location": "Remote India", "url": "https://in.indeed.com/jobs?q=Frontend+Developer&l=Remote+India"}, {"id": 65, "platform": "Indeed India", "role": "Full Stack Developer", "location": "India", "url": "https://in.indeed.com/jobs?q=Full+Stack+Developer&l=India"}, {"id": 66, "platform": "Indeed India", "role": "Full Stack Developer", "location": "Remote India", "url": "https://in.indeed.com/jobs?q=Full+Stack+Developer&l=Remote+India"}, {"id": 67, "platform": "Indeed India", "role": "React Developer", "location": "India", "url": "https://in.indeed.com/jobs?q=React+Developer&l=India"}, {"id": 68, "platform": "Indeed India", "role": "React Developer", "location": "Remote India", "url": "https://in.indeed.com/jobs?q=React+Developer&l=Remote+India"}, {"id": 69, "platform": "Indeed India", "role": "Node.js Developer", "location": "India", "url": "https://in.indeed.com/jobs?q=Node.js+Developer&l=India"}, {"id": 70, "platform": "Indeed India", "role": "Node.js Developer", "location": "Remote India", "url": "https://in.indeed.com/jobs?q=Node.js+Developer&l=Remote+India"}, {"id": 71, "platform": "Indeed India", "role": "Java Full Stack Developer", "location": "India", "url": "https://in.indeed.com/jobs?q=Java+Full+Stack+Developer&l=India"}, {"id": 72, "platform": "Indeed India", "role": "Java Full Stack Developer", "location": "Remote India", "url": "https://in.indeed.com/jobs?q=Java+Full+Stack+Developer&l=Remote+India"}, {"id": 73, "platform": "Indeed India", "role": "QA Tester", "location": "India", "url": "https://in.indeed.com/jobs?q=QA+Tester&l=India"}, {"id": 74, "platform": "Indeed India", "role": "QA Tester", "location": "Remote India", "url": "https://in.indeed.com/jobs?q=QA+Tester&l=Remote+India"}, {"id": 75, "platform": "Indeed India", "role": "QA Automation Engineer", "location": "India", "url": "https://in.indeed.com/jobs?q=QA+Automation+Engineer&l=India"}, {"id": 76, "platform": "Indeed India", "role": "QA Automation Engineer", "location": "Remote India", "url": "https://in.indeed.com/jobs?q=QA+Automation+Engineer&l=Remote+India"}, {"id": 77, "platform": "Indeed India", "role": "Test Engineer", "location": "India", "url": "https://in.indeed.com/jobs?q=Test+Engineer&l=India"}, {"id": 78, "platform": "Indeed India", "role": "Test Engineer", "location": "Remote India", "url": "https://in.indeed.com/jobs?q=Test+Engineer&l=Remote+India"}, {"id": 79, "platform": "Indeed India", "role": "DevOps Engineer", "location": "India", "url": "https://in.indeed.com/jobs?q=DevOps+Engineer&l=India"}, {"id": 80, "platform": "Indeed India", "role": "DevOps Engineer", "location": "Remote India", "url": "https://in.indeed.com/jobs?q=DevOps+Engineer&l=Remote+India"}, {"id": 81, "platform": "Indeed India", "role": "Cloud Engineer", "location": "India", "url": "https://in.indeed.com/jobs?q=Cloud+Engineer&l=India"}, {"id": 82, "platform": "Indeed India", "role": "Cloud Engineer", "location": "Remote India", "url": "https://in.indeed.com/jobs?q=Cloud+Engineer&l=Remote+India"}, {"id": 83, "platform": "Indeed India", "role": "Data Analyst", "location": "India", "url": "https://in.indeed.com/jobs?q=Data+Analyst&l=India"}, {"id": 84, "platform": "Indeed India", "role": "Data Analyst", "location": "Remote India", "url": "https://in.indeed.com/jobs?q=Data+Analyst&l=Remote+India"}, {"id": 85, "platform": "Indeed India", "role": "Data Scientist", "location": "India", "url": "https://in.indeed.com/jobs?q=Data+Scientist&l=India"}, {"id": 86, "platform": "Indeed India", "role": "Data Scientist", "location": "Remote India", "url": "https://in.indeed.com/jobs?q=Data+Scientist&l=Remote+India"}, {"id": 87, "platform": "Indeed India", "role": "Machine Learning Engineer", "location": "India", "url": "https://in.indeed.com/jobs?q=Machine+Learning+Engineer&l=India"}, {"id": 88, "platform": "Indeed India", "role": "Machine Learning Engineer", "location": "Remote India", "url": "https://in.indeed.com/jobs?q=Machine+Learning+Engineer&l=Remote+India"}, {"id": 89, "platform": "Indeed India", "role": "AI Engineer", "location": "India", "url": "https://in.indeed.com/jobs?q=AI+Engineer&l=India"}, {"id": 90, "platform": "Indeed India", "role": "AI Engineer", "location": "Remote India", "url": "https://in.indeed.com/jobs?q=AI+Engineer&l=Remote+India"}, {"id": 91, "platform": "Indeed India", "role": "GenAI Engineer", "location": "India", "url": "https://in.indeed.com/jobs?q=GenAI+Engineer&l=India"}, {"id": 92, "platform": "Indeed India", "role": "GenAI Engineer", "location": "Remote India", "url": "https://in.indeed.com/jobs?q=GenAI+Engineer&l=Remote+India"}, {"id": 93, "platform": "Indeed India", "role": "Data Engineer", "location": "India", "url": "https://in.indeed.com/jobs?q=Data+Engineer&l=India"}, {"id": 94, "platform": "Indeed India", "role": "Data Engineer", "location": "Remote India", "url": "https://in.indeed.com/jobs?q=Data+Engineer&l=Remote+India"}, {"id": 95, "platform": "Indeed India", "role": "SQL Developer", "location": "India", "url": "https://in.indeed.com/jobs?q=SQL+Developer&l=India"}, {"id": 96, "platform": "Indeed India", "role": "SQL Developer", "location": "Remote India", "url": "https://in.indeed.com/jobs?q=SQL+Developer&l=Remote+India"}, {"id": 97, "platform": "Indeed India", "role": "Android Developer", "location": "India", "url": "https://in.indeed.com/jobs?q=Android+Developer&l=India"}, {"id": 98, "platform": "Indeed India", "role": "Android Developer", "location": "Remote India", "url": "https://in.indeed.com/jobs?q=Android+Developer&l=Remote+India"}, {"id": 99, "platform": "Indeed India", "role": "Cybersecurity Analyst", "location": "India", "url": "https://in.indeed.com/jobs?q=Cybersecurity+Analyst&l=India"}, {"id": 100, "platform": "Indeed India", "role": "Cybersecurity Analyst", "location": "Remote India", "url": "https://in.indeed.com/jobs?q=Cybersecurity+Analyst&l=Remote+India"}, {"id": 101, "platform": "Wellfound", "role": "Software Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Software+Engineer+India+India"}, {"id": 102, "platform": "Wellfound", "role": "Software Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Software+Engineer+Remote+India+India"}, {"id": 103, "platform": "Wellfound", "role": "Software Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Software+Developer+India+India"}, {"id": 104, "platform": "Wellfound", "role": "Software Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Software+Developer+Remote+India+India"}, {"id": 105, "platform": "Wellfound", "role": "Java Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Java+Developer+India+India"}, {"id": 106, "platform": "Wellfound", "role": "Java Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Java+Developer+Remote+India+India"}, {"id": 107, "platform": "Wellfound", "role": "Spring Boot Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Spring+Boot+Developer+India+India"}, {"id": 108, "platform": "Wellfound", "role": "Spring Boot Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Spring+Boot+Developer+Remote+India+India"}, {"id": 109, "platform": "Wellfound", "role": "Python Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Python+Developer+India+India"}, {"id": 110, "platform": "Wellfound", "role": "Python Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Python+Developer+Remote+India+India"}, {"id": 111, "platform": "Wellfound", "role": "Backend Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Backend+Developer+India+India"}, {"id": 112, "platform": "Wellfound", "role": "Backend Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Backend+Developer+Remote+India+India"}, {"id": 113, "platform": "Wellfound", "role": "Frontend Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Frontend+Developer+India+India"}, {"id": 114, "platform": "Wellfound", "role": "Frontend Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Frontend+Developer+Remote+India+India"}, {"id": 115, "platform": "Wellfound", "role": "Full Stack Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Full+Stack+Developer+India+India"}, {"id": 116, "platform": "Wellfound", "role": "Full Stack Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Full+Stack+Developer+Remote+India+India"}, {"id": 117, "platform": "Wellfound", "role": "React Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+React+Developer+India+India"}, {"id": 118, "platform": "Wellfound", "role": "React Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+React+Developer+Remote+India+India"}, {"id": 119, "platform": "Wellfound", "role": "Node.js Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Node.js+Developer+India+India"}, {"id": 120, "platform": "Wellfound", "role": "Node.js Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Node.js+Developer+Remote+India+India"}, {"id": 121, "platform": "Wellfound", "role": "Java Full Stack Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Java+Full+Stack+Developer+India+India"}, {"id": 122, "platform": "Wellfound", "role": "Java Full Stack Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Java+Full+Stack+Developer+Remote+India+India"}, {"id": 123, "platform": "Wellfound", "role": "QA Tester", "location": "India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+QA+Tester+India+India"}, {"id": 124, "platform": "Wellfound", "role": "QA Tester", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+QA+Tester+Remote+India+India"}, {"id": 125, "platform": "Wellfound", "role": "QA Automation Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+QA+Automation+Engineer+India+India"}, {"id": 126, "platform": "Wellfound", "role": "QA Automation Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+QA+Automation+Engineer+Remote+India+India"}, {"id": 127, "platform": "Wellfound", "role": "Test Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Test+Engineer+India+India"}, {"id": 128, "platform": "Wellfound", "role": "Test Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Test+Engineer+Remote+India+India"}, {"id": 129, "platform": "Wellfound", "role": "DevOps Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+DevOps+Engineer+India+India"}, {"id": 130, "platform": "Wellfound", "role": "DevOps Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+DevOps+Engineer+Remote+India+India"}, {"id": 131, "platform": "Wellfound", "role": "Cloud Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Cloud+Engineer+India+India"}, {"id": 132, "platform": "Wellfound", "role": "Cloud Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Cloud+Engineer+Remote+India+India"}, {"id": 133, "platform": "Wellfound", "role": "Data Analyst", "location": "India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Data+Analyst+India+India"}, {"id": 134, "platform": "Wellfound", "role": "Data Analyst", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Data+Analyst+Remote+India+India"}, {"id": 135, "platform": "Wellfound", "role": "Data Scientist", "location": "India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Data+Scientist+India+India"}, {"id": 136, "platform": "Wellfound", "role": "Data Scientist", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Data+Scientist+Remote+India+India"}, {"id": 137, "platform": "Wellfound", "role": "Machine Learning Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Machine+Learning+Engineer+India+India"}, {"id": 138, "platform": "Wellfound", "role": "Machine Learning Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Machine+Learning+Engineer+Remote+India+India"}, {"id": 139, "platform": "Wellfound", "role": "AI Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+AI+Engineer+India+India"}, {"id": 140, "platform": "Wellfound", "role": "AI Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+AI+Engineer+Remote+India+India"}, {"id": 141, "platform": "Wellfound", "role": "GenAI Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+GenAI+Engineer+India+India"}, {"id": 142, "platform": "Wellfound", "role": "GenAI Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+GenAI+Engineer+Remote+India+India"}, {"id": 143, "platform": "Wellfound", "role": "Data Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Data+Engineer+India+India"}, {"id": 144, "platform": "Wellfound", "role": "Data Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Data+Engineer+Remote+India+India"}, {"id": 145, "platform": "Wellfound", "role": "SQL Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+SQL+Developer+India+India"}, {"id": 146, "platform": "Wellfound", "role": "SQL Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+SQL+Developer+Remote+India+India"}, {"id": 147, "platform": "Wellfound", "role": "Android Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Android+Developer+India+India"}, {"id": 148, "platform": "Wellfound", "role": "Android Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Android+Developer+Remote+India+India"}, {"id": 149, "platform": "Wellfound", "role": "Cybersecurity Analyst", "location": "India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Cybersecurity+Analyst+India+India"}, {"id": 150, "platform": "Wellfound", "role": "Cybersecurity Analyst", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Awellfound.com%2Fjobs+Cybersecurity+Analyst+Remote+India+India"}, {"id": 151, "platform": "Cutshort", "role": "Software Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Software+Engineer+India+India"}, {"id": 152, "platform": "Cutshort", "role": "Software Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Software+Engineer+Remote+India+India"}, {"id": 153, "platform": "Cutshort", "role": "Software Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Software+Developer+India+India"}, {"id": 154, "platform": "Cutshort", "role": "Software Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Software+Developer+Remote+India+India"}, {"id": 155, "platform": "Cutshort", "role": "Java Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Java+Developer+India+India"}, {"id": 156, "platform": "Cutshort", "role": "Java Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Java+Developer+Remote+India+India"}, {"id": 157, "platform": "Cutshort", "role": "Spring Boot Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Spring+Boot+Developer+India+India"}, {"id": 158, "platform": "Cutshort", "role": "Spring Boot Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Spring+Boot+Developer+Remote+India+India"}, {"id": 159, "platform": "Cutshort", "role": "Python Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Python+Developer+India+India"}, {"id": 160, "platform": "Cutshort", "role": "Python Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Python+Developer+Remote+India+India"}, {"id": 161, "platform": "Cutshort", "role": "Backend Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Backend+Developer+India+India"}, {"id": 162, "platform": "Cutshort", "role": "Backend Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Backend+Developer+Remote+India+India"}, {"id": 163, "platform": "Cutshort", "role": "Frontend Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Frontend+Developer+India+India"}, {"id": 164, "platform": "Cutshort", "role": "Frontend Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Frontend+Developer+Remote+India+India"}, {"id": 165, "platform": "Cutshort", "role": "Full Stack Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Full+Stack+Developer+India+India"}, {"id": 166, "platform": "Cutshort", "role": "Full Stack Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Full+Stack+Developer+Remote+India+India"}, {"id": 167, "platform": "Cutshort", "role": "React Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+React+Developer+India+India"}, {"id": 168, "platform": "Cutshort", "role": "React Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+React+Developer+Remote+India+India"}, {"id": 169, "platform": "Cutshort", "role": "Node.js Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Node.js+Developer+India+India"}, {"id": 170, "platform": "Cutshort", "role": "Node.js Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Node.js+Developer+Remote+India+India"}, {"id": 171, "platform": "Cutshort", "role": "Java Full Stack Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Java+Full+Stack+Developer+India+India"}, {"id": 172, "platform": "Cutshort", "role": "Java Full Stack Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Java+Full+Stack+Developer+Remote+India+India"}, {"id": 173, "platform": "Cutshort", "role": "QA Tester", "location": "India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+QA+Tester+India+India"}, {"id": 174, "platform": "Cutshort", "role": "QA Tester", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+QA+Tester+Remote+India+India"}, {"id": 175, "platform": "Cutshort", "role": "QA Automation Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+QA+Automation+Engineer+India+India"}, {"id": 176, "platform": "Cutshort", "role": "QA Automation Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+QA+Automation+Engineer+Remote+India+India"}, {"id": 177, "platform": "Cutshort", "role": "Test Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Test+Engineer+India+India"}, {"id": 178, "platform": "Cutshort", "role": "Test Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Test+Engineer+Remote+India+India"}, {"id": 179, "platform": "Cutshort", "role": "DevOps Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+DevOps+Engineer+India+India"}, {"id": 180, "platform": "Cutshort", "role": "DevOps Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+DevOps+Engineer+Remote+India+India"}, {"id": 181, "platform": "Cutshort", "role": "Cloud Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Cloud+Engineer+India+India"}, {"id": 182, "platform": "Cutshort", "role": "Cloud Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Cloud+Engineer+Remote+India+India"}, {"id": 183, "platform": "Cutshort", "role": "Data Analyst", "location": "India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Data+Analyst+India+India"}, {"id": 184, "platform": "Cutshort", "role": "Data Analyst", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Data+Analyst+Remote+India+India"}, {"id": 185, "platform": "Cutshort", "role": "Data Scientist", "location": "India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Data+Scientist+India+India"}, {"id": 186, "platform": "Cutshort", "role": "Data Scientist", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Data+Scientist+Remote+India+India"}, {"id": 187, "platform": "Cutshort", "role": "Machine Learning Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Machine+Learning+Engineer+India+India"}, {"id": 188, "platform": "Cutshort", "role": "Machine Learning Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Machine+Learning+Engineer+Remote+India+India"}, {"id": 189, "platform": "Cutshort", "role": "AI Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+AI+Engineer+India+India"}, {"id": 190, "platform": "Cutshort", "role": "AI Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+AI+Engineer+Remote+India+India"}, {"id": 191, "platform": "Cutshort", "role": "GenAI Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+GenAI+Engineer+India+India"}, {"id": 192, "platform": "Cutshort", "role": "GenAI Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+GenAI+Engineer+Remote+India+India"}, {"id": 193, "platform": "Cutshort", "role": "Data Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Data+Engineer+India+India"}, {"id": 194, "platform": "Cutshort", "role": "Data Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Data+Engineer+Remote+India+India"}, {"id": 195, "platform": "Cutshort", "role": "SQL Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+SQL+Developer+India+India"}, {"id": 196, "platform": "Cutshort", "role": "SQL Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+SQL+Developer+Remote+India+India"}, {"id": 197, "platform": "Cutshort", "role": "Android Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Android+Developer+India+India"}, {"id": 198, "platform": "Cutshort", "role": "Android Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Android+Developer+Remote+India+India"}, {"id": 199, "platform": "Cutshort", "role": "Cybersecurity Analyst", "location": "India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Cybersecurity+Analyst+India+India"}, {"id": 200, "platform": "Cutshort", "role": "Cybersecurity Analyst", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Acutshort.io%2Fjob+Cybersecurity+Analyst+Remote+India+India"}, {"id": 201, "platform": "Hirist", "role": "Software Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Software+Engineer+India+India"}, {"id": 202, "platform": "Hirist", "role": "Software Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Software+Engineer+Remote+India+India"}, {"id": 203, "platform": "Hirist", "role": "Software Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Software+Developer+India+India"}, {"id": 204, "platform": "Hirist", "role": "Software Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Software+Developer+Remote+India+India"}, {"id": 205, "platform": "Hirist", "role": "Java Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Java+Developer+India+India"}, {"id": 206, "platform": "Hirist", "role": "Java Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Java+Developer+Remote+India+India"}, {"id": 207, "platform": "Hirist", "role": "Spring Boot Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Spring+Boot+Developer+India+India"}, {"id": 208, "platform": "Hirist", "role": "Spring Boot Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Spring+Boot+Developer+Remote+India+India"}, {"id": 209, "platform": "Hirist", "role": "Python Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Python+Developer+India+India"}, {"id": 210, "platform": "Hirist", "role": "Python Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Python+Developer+Remote+India+India"}, {"id": 211, "platform": "Hirist", "role": "Backend Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Backend+Developer+India+India"}, {"id": 212, "platform": "Hirist", "role": "Backend Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Backend+Developer+Remote+India+India"}, {"id": 213, "platform": "Hirist", "role": "Frontend Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Frontend+Developer+India+India"}, {"id": 214, "platform": "Hirist", "role": "Frontend Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Frontend+Developer+Remote+India+India"}, {"id": 215, "platform": "Hirist", "role": "Full Stack Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Full+Stack+Developer+India+India"}, {"id": 216, "platform": "Hirist", "role": "Full Stack Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Full+Stack+Developer+Remote+India+India"}, {"id": 217, "platform": "Hirist", "role": "React Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+React+Developer+India+India"}, {"id": 218, "platform": "Hirist", "role": "React Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+React+Developer+Remote+India+India"}, {"id": 219, "platform": "Hirist", "role": "Node.js Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Node.js+Developer+India+India"}, {"id": 220, "platform": "Hirist", "role": "Node.js Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Node.js+Developer+Remote+India+India"}, {"id": 221, "platform": "Hirist", "role": "Java Full Stack Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Java+Full+Stack+Developer+India+India"}, {"id": 222, "platform": "Hirist", "role": "Java Full Stack Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Java+Full+Stack+Developer+Remote+India+India"}, {"id": 223, "platform": "Hirist", "role": "QA Tester", "location": "India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+QA+Tester+India+India"}, {"id": 224, "platform": "Hirist", "role": "QA Tester", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+QA+Tester+Remote+India+India"}, {"id": 225, "platform": "Hirist", "role": "QA Automation Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+QA+Automation+Engineer+India+India"}, {"id": 226, "platform": "Hirist", "role": "QA Automation Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+QA+Automation+Engineer+Remote+India+India"}, {"id": 227, "platform": "Hirist", "role": "Test Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Test+Engineer+India+India"}, {"id": 228, "platform": "Hirist", "role": "Test Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Test+Engineer+Remote+India+India"}, {"id": 229, "platform": "Hirist", "role": "DevOps Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+DevOps+Engineer+India+India"}, {"id": 230, "platform": "Hirist", "role": "DevOps Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+DevOps+Engineer+Remote+India+India"}, {"id": 231, "platform": "Hirist", "role": "Cloud Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Cloud+Engineer+India+India"}, {"id": 232, "platform": "Hirist", "role": "Cloud Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Cloud+Engineer+Remote+India+India"}, {"id": 233, "platform": "Hirist", "role": "Data Analyst", "location": "India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Data+Analyst+India+India"}, {"id": 234, "platform": "Hirist", "role": "Data Analyst", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Data+Analyst+Remote+India+India"}, {"id": 235, "platform": "Hirist", "role": "Data Scientist", "location": "India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Data+Scientist+India+India"}, {"id": 236, "platform": "Hirist", "role": "Data Scientist", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Data+Scientist+Remote+India+India"}, {"id": 237, "platform": "Hirist", "role": "Machine Learning Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Machine+Learning+Engineer+India+India"}, {"id": 238, "platform": "Hirist", "role": "Machine Learning Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Machine+Learning+Engineer+Remote+India+India"}, {"id": 239, "platform": "Hirist", "role": "AI Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+AI+Engineer+India+India"}, {"id": 240, "platform": "Hirist", "role": "AI Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+AI+Engineer+Remote+India+India"}, {"id": 241, "platform": "Hirist", "role": "GenAI Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+GenAI+Engineer+India+India"}, {"id": 242, "platform": "Hirist", "role": "GenAI Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+GenAI+Engineer+Remote+India+India"}, {"id": 243, "platform": "Hirist", "role": "Data Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Data+Engineer+India+India"}, {"id": 244, "platform": "Hirist", "role": "Data Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Data+Engineer+Remote+India+India"}, {"id": 245, "platform": "Hirist", "role": "SQL Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+SQL+Developer+India+India"}, {"id": 246, "platform": "Hirist", "role": "SQL Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+SQL+Developer+Remote+India+India"}, {"id": 247, "platform": "Hirist", "role": "Android Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Android+Developer+India+India"}, {"id": 248, "platform": "Hirist", "role": "Android Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Android+Developer+Remote+India+India"}, {"id": 249, "platform": "Hirist", "role": "Cybersecurity Analyst", "location": "India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Cybersecurity+Analyst+India+India"}, {"id": 250, "platform": "Hirist", "role": "Cybersecurity Analyst", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ahirist.tech%2Fj+Cybersecurity+Analyst+Remote+India+India"}, {"id": 251, "platform": "Foundit", "role": "Software Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Software+Engineer+India+India"}, {"id": 252, "platform": "Foundit", "role": "Software Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Software+Engineer+Remote+India+India"}, {"id": 253, "platform": "Foundit", "role": "Software Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Software+Developer+India+India"}, {"id": 254, "platform": "Foundit", "role": "Software Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Software+Developer+Remote+India+India"}, {"id": 255, "platform": "Foundit", "role": "Java Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Java+Developer+India+India"}, {"id": 256, "platform": "Foundit", "role": "Java Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Java+Developer+Remote+India+India"}, {"id": 257, "platform": "Foundit", "role": "Spring Boot Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Spring+Boot+Developer+India+India"}, {"id": 258, "platform": "Foundit", "role": "Spring Boot Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Spring+Boot+Developer+Remote+India+India"}, {"id": 259, "platform": "Foundit", "role": "Python Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Python+Developer+India+India"}, {"id": 260, "platform": "Foundit", "role": "Python Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Python+Developer+Remote+India+India"}, {"id": 261, "platform": "Foundit", "role": "Backend Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Backend+Developer+India+India"}, {"id": 262, "platform": "Foundit", "role": "Backend Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Backend+Developer+Remote+India+India"}, {"id": 263, "platform": "Foundit", "role": "Frontend Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Frontend+Developer+India+India"}, {"id": 264, "platform": "Foundit", "role": "Frontend Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Frontend+Developer+Remote+India+India"}, {"id": 265, "platform": "Foundit", "role": "Full Stack Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Full+Stack+Developer+India+India"}, {"id": 266, "platform": "Foundit", "role": "Full Stack Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Full+Stack+Developer+Remote+India+India"}, {"id": 267, "platform": "Foundit", "role": "React Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+React+Developer+India+India"}, {"id": 268, "platform": "Foundit", "role": "React Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+React+Developer+Remote+India+India"}, {"id": 269, "platform": "Foundit", "role": "Node.js Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Node.js+Developer+India+India"}, {"id": 270, "platform": "Foundit", "role": "Node.js Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Node.js+Developer+Remote+India+India"}, {"id": 271, "platform": "Foundit", "role": "Java Full Stack Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Java+Full+Stack+Developer+India+India"}, {"id": 272, "platform": "Foundit", "role": "Java Full Stack Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Java+Full+Stack+Developer+Remote+India+India"}, {"id": 273, "platform": "Foundit", "role": "QA Tester", "location": "India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+QA+Tester+India+India"}, {"id": 274, "platform": "Foundit", "role": "QA Tester", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+QA+Tester+Remote+India+India"}, {"id": 275, "platform": "Foundit", "role": "QA Automation Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+QA+Automation+Engineer+India+India"}, {"id": 276, "platform": "Foundit", "role": "QA Automation Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+QA+Automation+Engineer+Remote+India+India"}, {"id": 277, "platform": "Foundit", "role": "Test Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Test+Engineer+India+India"}, {"id": 278, "platform": "Foundit", "role": "Test Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Test+Engineer+Remote+India+India"}, {"id": 279, "platform": "Foundit", "role": "DevOps Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+DevOps+Engineer+India+India"}, {"id": 280, "platform": "Foundit", "role": "DevOps Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+DevOps+Engineer+Remote+India+India"}, {"id": 281, "platform": "Foundit", "role": "Cloud Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Cloud+Engineer+India+India"}, {"id": 282, "platform": "Foundit", "role": "Cloud Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Cloud+Engineer+Remote+India+India"}, {"id": 283, "platform": "Foundit", "role": "Data Analyst", "location": "India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Data+Analyst+India+India"}, {"id": 284, "platform": "Foundit", "role": "Data Analyst", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Data+Analyst+Remote+India+India"}, {"id": 285, "platform": "Foundit", "role": "Data Scientist", "location": "India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Data+Scientist+India+India"}, {"id": 286, "platform": "Foundit", "role": "Data Scientist", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Data+Scientist+Remote+India+India"}, {"id": 287, "platform": "Foundit", "role": "Machine Learning Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Machine+Learning+Engineer+India+India"}, {"id": 288, "platform": "Foundit", "role": "Machine Learning Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Machine+Learning+Engineer+Remote+India+India"}, {"id": 289, "platform": "Foundit", "role": "AI Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+AI+Engineer+India+India"}, {"id": 290, "platform": "Foundit", "role": "AI Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+AI+Engineer+Remote+India+India"}, {"id": 291, "platform": "Foundit", "role": "GenAI Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+GenAI+Engineer+India+India"}, {"id": 292, "platform": "Foundit", "role": "GenAI Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+GenAI+Engineer+Remote+India+India"}, {"id": 293, "platform": "Foundit", "role": "Data Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Data+Engineer+India+India"}, {"id": 294, "platform": "Foundit", "role": "Data Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Data+Engineer+Remote+India+India"}, {"id": 295, "platform": "Foundit", "role": "SQL Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+SQL+Developer+India+India"}, {"id": 296, "platform": "Foundit", "role": "SQL Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+SQL+Developer+Remote+India+India"}, {"id": 297, "platform": "Foundit", "role": "Android Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Android+Developer+India+India"}, {"id": 298, "platform": "Foundit", "role": "Android Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Android+Developer+Remote+India+India"}, {"id": 299, "platform": "Foundit", "role": "Cybersecurity Analyst", "location": "India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Cybersecurity+Analyst+India+India"}, {"id": 300, "platform": "Foundit", "role": "Cybersecurity Analyst", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afoundit.in%2Fjob+Cybersecurity+Analyst+Remote+India+India"}, {"id": 301, "platform": "Internshala", "role": "Software Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Software+Engineer+India"}, {"id": 302, "platform": "Internshala", "role": "Software Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Software+Engineer+Remote+India"}, {"id": 303, "platform": "Internshala", "role": "Software Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Software+Developer+India"}, {"id": 304, "platform": "Internshala", "role": "Software Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Software+Developer+Remote+India"}, {"id": 305, "platform": "Internshala", "role": "Java Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Java+Developer+India"}, {"id": 306, "platform": "Internshala", "role": "Java Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Java+Developer+Remote+India"}, {"id": 307, "platform": "Internshala", "role": "Spring Boot Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Spring+Boot+Developer+India"}, {"id": 308, "platform": "Internshala", "role": "Spring Boot Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Spring+Boot+Developer+Remote+India"}, {"id": 309, "platform": "Internshala", "role": "Python Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Python+Developer+India"}, {"id": 310, "platform": "Internshala", "role": "Python Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Python+Developer+Remote+India"}, {"id": 311, "platform": "Internshala", "role": "Backend Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Backend+Developer+India"}, {"id": 312, "platform": "Internshala", "role": "Backend Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Backend+Developer+Remote+India"}, {"id": 313, "platform": "Internshala", "role": "Frontend Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Frontend+Developer+India"}, {"id": 314, "platform": "Internshala", "role": "Frontend Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Frontend+Developer+Remote+India"}, {"id": 315, "platform": "Internshala", "role": "Full Stack Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Full+Stack+Developer+India"}, {"id": 316, "platform": "Internshala", "role": "Full Stack Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Full+Stack+Developer+Remote+India"}, {"id": 317, "platform": "Internshala", "role": "React Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+React+Developer+India"}, {"id": 318, "platform": "Internshala", "role": "React Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+React+Developer+Remote+India"}, {"id": 319, "platform": "Internshala", "role": "Node.js Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Node.js+Developer+India"}, {"id": 320, "platform": "Internshala", "role": "Node.js Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Node.js+Developer+Remote+India"}, {"id": 321, "platform": "Internshala", "role": "Java Full Stack Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Java+Full+Stack+Developer+India"}, {"id": 322, "platform": "Internshala", "role": "Java Full Stack Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Java+Full+Stack+Developer+Remote+India"}, {"id": 323, "platform": "Internshala", "role": "QA Tester", "location": "India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+QA+Tester+India"}, {"id": 324, "platform": "Internshala", "role": "QA Tester", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+QA+Tester+Remote+India"}, {"id": 325, "platform": "Internshala", "role": "QA Automation Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+QA+Automation+Engineer+India"}, {"id": 326, "platform": "Internshala", "role": "QA Automation Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+QA+Automation+Engineer+Remote+India"}, {"id": 327, "platform": "Internshala", "role": "Test Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Test+Engineer+India"}, {"id": 328, "platform": "Internshala", "role": "Test Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Test+Engineer+Remote+India"}, {"id": 329, "platform": "Internshala", "role": "DevOps Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+DevOps+Engineer+India"}, {"id": 330, "platform": "Internshala", "role": "DevOps Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+DevOps+Engineer+Remote+India"}, {"id": 331, "platform": "Internshala", "role": "Cloud Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Cloud+Engineer+India"}, {"id": 332, "platform": "Internshala", "role": "Cloud Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Cloud+Engineer+Remote+India"}, {"id": 333, "platform": "Internshala", "role": "Data Analyst", "location": "India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Data+Analyst+India"}, {"id": 334, "platform": "Internshala", "role": "Data Analyst", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Data+Analyst+Remote+India"}, {"id": 335, "platform": "Internshala", "role": "Data Scientist", "location": "India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Data+Scientist+India"}, {"id": 336, "platform": "Internshala", "role": "Data Scientist", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Data+Scientist+Remote+India"}, {"id": 337, "platform": "Internshala", "role": "Machine Learning Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Machine+Learning+Engineer+India"}, {"id": 338, "platform": "Internshala", "role": "Machine Learning Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Machine+Learning+Engineer+Remote+India"}, {"id": 339, "platform": "Internshala", "role": "AI Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+AI+Engineer+India"}, {"id": 340, "platform": "Internshala", "role": "AI Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+AI+Engineer+Remote+India"}, {"id": 341, "platform": "Internshala", "role": "GenAI Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+GenAI+Engineer+India"}, {"id": 342, "platform": "Internshala", "role": "GenAI Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+GenAI+Engineer+Remote+India"}, {"id": 343, "platform": "Internshala", "role": "Data Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Data+Engineer+India"}, {"id": 344, "platform": "Internshala", "role": "Data Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Data+Engineer+Remote+India"}, {"id": 345, "platform": "Internshala", "role": "SQL Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+SQL+Developer+India"}, {"id": 346, "platform": "Internshala", "role": "SQL Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+SQL+Developer+Remote+India"}, {"id": 347, "platform": "Internshala", "role": "Android Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Android+Developer+India"}, {"id": 348, "platform": "Internshala", "role": "Android Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Android+Developer+Remote+India"}, {"id": 349, "platform": "Internshala", "role": "Cybersecurity Analyst", "location": "India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Cybersecurity+Analyst+India"}, {"id": 350, "platform": "Internshala", "role": "Cybersecurity Analyst", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Ainternshala.com%2Fjobs+Cybersecurity+Analyst+Remote+India"}, {"id": 351, "platform": "Glassdoor India", "role": "Software Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Software+Engineer+India"}, {"id": 352, "platform": "Glassdoor India", "role": "Software Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Software+Engineer+Remote+India"}, {"id": 353, "platform": "Glassdoor India", "role": "Software Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Software+Developer+India"}, {"id": 354, "platform": "Glassdoor India", "role": "Software Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Software+Developer+Remote+India"}, {"id": 355, "platform": "Glassdoor India", "role": "Java Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Java+Developer+India"}, {"id": 356, "platform": "Glassdoor India", "role": "Java Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Java+Developer+Remote+India"}, {"id": 357, "platform": "Glassdoor India", "role": "Spring Boot Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Spring+Boot+Developer+India"}, {"id": 358, "platform": "Glassdoor India", "role": "Spring Boot Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Spring+Boot+Developer+Remote+India"}, {"id": 359, "platform": "Glassdoor India", "role": "Python Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Python+Developer+India"}, {"id": 360, "platform": "Glassdoor India", "role": "Python Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Python+Developer+Remote+India"}, {"id": 361, "platform": "Glassdoor India", "role": "Backend Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Backend+Developer+India"}, {"id": 362, "platform": "Glassdoor India", "role": "Backend Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Backend+Developer+Remote+India"}, {"id": 363, "platform": "Glassdoor India", "role": "Frontend Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Frontend+Developer+India"}, {"id": 364, "platform": "Glassdoor India", "role": "Frontend Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Frontend+Developer+Remote+India"}, {"id": 365, "platform": "Glassdoor India", "role": "Full Stack Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Full+Stack+Developer+India"}, {"id": 366, "platform": "Glassdoor India", "role": "Full Stack Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Full+Stack+Developer+Remote+India"}, {"id": 367, "platform": "Glassdoor India", "role": "React Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+React+Developer+India"}, {"id": 368, "platform": "Glassdoor India", "role": "React Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+React+Developer+Remote+India"}, {"id": 369, "platform": "Glassdoor India", "role": "Node.js Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Node.js+Developer+India"}, {"id": 370, "platform": "Glassdoor India", "role": "Node.js Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Node.js+Developer+Remote+India"}, {"id": 371, "platform": "Glassdoor India", "role": "Java Full Stack Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Java+Full+Stack+Developer+India"}, {"id": 372, "platform": "Glassdoor India", "role": "Java Full Stack Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Java+Full+Stack+Developer+Remote+India"}, {"id": 373, "platform": "Glassdoor India", "role": "QA Tester", "location": "India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+QA+Tester+India"}, {"id": 374, "platform": "Glassdoor India", "role": "QA Tester", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+QA+Tester+Remote+India"}, {"id": 375, "platform": "Glassdoor India", "role": "QA Automation Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+QA+Automation+Engineer+India"}, {"id": 376, "platform": "Glassdoor India", "role": "QA Automation Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+QA+Automation+Engineer+Remote+India"}, {"id": 377, "platform": "Glassdoor India", "role": "Test Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Test+Engineer+India"}, {"id": 378, "platform": "Glassdoor India", "role": "Test Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Test+Engineer+Remote+India"}, {"id": 379, "platform": "Glassdoor India", "role": "DevOps Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+DevOps+Engineer+India"}, {"id": 380, "platform": "Glassdoor India", "role": "DevOps Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+DevOps+Engineer+Remote+India"}, {"id": 381, "platform": "Glassdoor India", "role": "Cloud Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Cloud+Engineer+India"}, {"id": 382, "platform": "Glassdoor India", "role": "Cloud Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Cloud+Engineer+Remote+India"}, {"id": 383, "platform": "Glassdoor India", "role": "Data Analyst", "location": "India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Data+Analyst+India"}, {"id": 384, "platform": "Glassdoor India", "role": "Data Analyst", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Data+Analyst+Remote+India"}, {"id": 385, "platform": "Glassdoor India", "role": "Data Scientist", "location": "India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Data+Scientist+India"}, {"id": 386, "platform": "Glassdoor India", "role": "Data Scientist", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Data+Scientist+Remote+India"}, {"id": 387, "platform": "Glassdoor India", "role": "Machine Learning Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Machine+Learning+Engineer+India"}, {"id": 388, "platform": "Glassdoor India", "role": "Machine Learning Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Machine+Learning+Engineer+Remote+India"}, {"id": 389, "platform": "Glassdoor India", "role": "AI Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+AI+Engineer+India"}, {"id": 390, "platform": "Glassdoor India", "role": "AI Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+AI+Engineer+Remote+India"}, {"id": 391, "platform": "Glassdoor India", "role": "GenAI Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+GenAI+Engineer+India"}, {"id": 392, "platform": "Glassdoor India", "role": "GenAI Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+GenAI+Engineer+Remote+India"}, {"id": 393, "platform": "Glassdoor India", "role": "Data Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Data+Engineer+India"}, {"id": 394, "platform": "Glassdoor India", "role": "Data Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Data+Engineer+Remote+India"}, {"id": 395, "platform": "Glassdoor India", "role": "SQL Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+SQL+Developer+India"}, {"id": 396, "platform": "Glassdoor India", "role": "SQL Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+SQL+Developer+Remote+India"}, {"id": 397, "platform": "Glassdoor India", "role": "Android Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Android+Developer+India"}, {"id": 398, "platform": "Glassdoor India", "role": "Android Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Android+Developer+Remote+India"}, {"id": 399, "platform": "Glassdoor India", "role": "Cybersecurity Analyst", "location": "India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Cybersecurity+Analyst+India"}, {"id": 400, "platform": "Glassdoor India", "role": "Cybersecurity Analyst", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aglassdoor.co.in%2FJob+Cybersecurity+Analyst+Remote+India"}, {"id": 401, "platform": "Freshersworld", "role": "Software Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Software+Engineer+India"}, {"id": 402, "platform": "Freshersworld", "role": "Software Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Software+Engineer+Remote+India"}, {"id": 403, "platform": "Freshersworld", "role": "Software Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Software+Developer+India"}, {"id": 404, "platform": "Freshersworld", "role": "Software Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Software+Developer+Remote+India"}, {"id": 405, "platform": "Freshersworld", "role": "Java Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Java+Developer+India"}, {"id": 406, "platform": "Freshersworld", "role": "Java Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Java+Developer+Remote+India"}, {"id": 407, "platform": "Freshersworld", "role": "Spring Boot Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Spring+Boot+Developer+India"}, {"id": 408, "platform": "Freshersworld", "role": "Spring Boot Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Spring+Boot+Developer+Remote+India"}, {"id": 409, "platform": "Freshersworld", "role": "Python Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Python+Developer+India"}, {"id": 410, "platform": "Freshersworld", "role": "Python Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Python+Developer+Remote+India"}, {"id": 411, "platform": "Freshersworld", "role": "Backend Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Backend+Developer+India"}, {"id": 412, "platform": "Freshersworld", "role": "Backend Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Backend+Developer+Remote+India"}, {"id": 413, "platform": "Freshersworld", "role": "Frontend Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Frontend+Developer+India"}, {"id": 414, "platform": "Freshersworld", "role": "Frontend Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Frontend+Developer+Remote+India"}, {"id": 415, "platform": "Freshersworld", "role": "Full Stack Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Full+Stack+Developer+India"}, {"id": 416, "platform": "Freshersworld", "role": "Full Stack Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Full+Stack+Developer+Remote+India"}, {"id": 417, "platform": "Freshersworld", "role": "React Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+React+Developer+India"}, {"id": 418, "platform": "Freshersworld", "role": "React Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+React+Developer+Remote+India"}, {"id": 419, "platform": "Freshersworld", "role": "Node.js Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Node.js+Developer+India"}, {"id": 420, "platform": "Freshersworld", "role": "Node.js Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Node.js+Developer+Remote+India"}, {"id": 421, "platform": "Freshersworld", "role": "Java Full Stack Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Java+Full+Stack+Developer+India"}, {"id": 422, "platform": "Freshersworld", "role": "Java Full Stack Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Java+Full+Stack+Developer+Remote+India"}, {"id": 423, "platform": "Freshersworld", "role": "QA Tester", "location": "India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+QA+Tester+India"}, {"id": 424, "platform": "Freshersworld", "role": "QA Tester", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+QA+Tester+Remote+India"}, {"id": 425, "platform": "Freshersworld", "role": "QA Automation Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+QA+Automation+Engineer+India"}, {"id": 426, "platform": "Freshersworld", "role": "QA Automation Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+QA+Automation+Engineer+Remote+India"}, {"id": 427, "platform": "Freshersworld", "role": "Test Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Test+Engineer+India"}, {"id": 428, "platform": "Freshersworld", "role": "Test Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Test+Engineer+Remote+India"}, {"id": 429, "platform": "Freshersworld", "role": "DevOps Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+DevOps+Engineer+India"}, {"id": 430, "platform": "Freshersworld", "role": "DevOps Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+DevOps+Engineer+Remote+India"}, {"id": 431, "platform": "Freshersworld", "role": "Cloud Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Cloud+Engineer+India"}, {"id": 432, "platform": "Freshersworld", "role": "Cloud Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Cloud+Engineer+Remote+India"}, {"id": 433, "platform": "Freshersworld", "role": "Data Analyst", "location": "India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Data+Analyst+India"}, {"id": 434, "platform": "Freshersworld", "role": "Data Analyst", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Data+Analyst+Remote+India"}, {"id": 435, "platform": "Freshersworld", "role": "Data Scientist", "location": "India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Data+Scientist+India"}, {"id": 436, "platform": "Freshersworld", "role": "Data Scientist", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Data+Scientist+Remote+India"}, {"id": 437, "platform": "Freshersworld", "role": "Machine Learning Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Machine+Learning+Engineer+India"}, {"id": 438, "platform": "Freshersworld", "role": "Machine Learning Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Machine+Learning+Engineer+Remote+India"}, {"id": 439, "platform": "Freshersworld", "role": "AI Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+AI+Engineer+India"}, {"id": 440, "platform": "Freshersworld", "role": "AI Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+AI+Engineer+Remote+India"}, {"id": 441, "platform": "Freshersworld", "role": "GenAI Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+GenAI+Engineer+India"}, {"id": 442, "platform": "Freshersworld", "role": "GenAI Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+GenAI+Engineer+Remote+India"}, {"id": 443, "platform": "Freshersworld", "role": "Data Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Data+Engineer+India"}, {"id": 444, "platform": "Freshersworld", "role": "Data Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Data+Engineer+Remote+India"}, {"id": 445, "platform": "Freshersworld", "role": "SQL Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+SQL+Developer+India"}, {"id": 446, "platform": "Freshersworld", "role": "SQL Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+SQL+Developer+Remote+India"}, {"id": 447, "platform": "Freshersworld", "role": "Android Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Android+Developer+India"}, {"id": 448, "platform": "Freshersworld", "role": "Android Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Android+Developer+Remote+India"}, {"id": 449, "platform": "Freshersworld", "role": "Cybersecurity Analyst", "location": "India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Cybersecurity+Analyst+India"}, {"id": 450, "platform": "Freshersworld", "role": "Cybersecurity Analyst", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Afreshersworld.com%2Fjobs+Cybersecurity+Analyst+Remote+India"}, {"id": 451, "platform": "Apna", "role": "Software Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Software+Engineer+India"}, {"id": 452, "platform": "Apna", "role": "Software Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Software+Engineer+Remote+India"}, {"id": 453, "platform": "Apna", "role": "Software Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Software+Developer+India"}, {"id": 454, "platform": "Apna", "role": "Software Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Software+Developer+Remote+India"}, {"id": 455, "platform": "Apna", "role": "Java Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Java+Developer+India"}, {"id": 456, "platform": "Apna", "role": "Java Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Java+Developer+Remote+India"}, {"id": 457, "platform": "Apna", "role": "Spring Boot Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Spring+Boot+Developer+India"}, {"id": 458, "platform": "Apna", "role": "Spring Boot Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Spring+Boot+Developer+Remote+India"}, {"id": 459, "platform": "Apna", "role": "Python Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Python+Developer+India"}, {"id": 460, "platform": "Apna", "role": "Python Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Python+Developer+Remote+India"}, {"id": 461, "platform": "Apna", "role": "Backend Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Backend+Developer+India"}, {"id": 462, "platform": "Apna", "role": "Backend Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Backend+Developer+Remote+India"}, {"id": 463, "platform": "Apna", "role": "Frontend Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Frontend+Developer+India"}, {"id": 464, "platform": "Apna", "role": "Frontend Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Frontend+Developer+Remote+India"}, {"id": 465, "platform": "Apna", "role": "Full Stack Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Full+Stack+Developer+India"}, {"id": 466, "platform": "Apna", "role": "Full Stack Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Full+Stack+Developer+Remote+India"}, {"id": 467, "platform": "Apna", "role": "React Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+React+Developer+India"}, {"id": 468, "platform": "Apna", "role": "React Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+React+Developer+Remote+India"}, {"id": 469, "platform": "Apna", "role": "Node.js Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Node.js+Developer+India"}, {"id": 470, "platform": "Apna", "role": "Node.js Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Node.js+Developer+Remote+India"}, {"id": 471, "platform": "Apna", "role": "Java Full Stack Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Java+Full+Stack+Developer+India"}, {"id": 472, "platform": "Apna", "role": "Java Full Stack Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Java+Full+Stack+Developer+Remote+India"}, {"id": 473, "platform": "Apna", "role": "QA Tester", "location": "India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+QA+Tester+India"}, {"id": 474, "platform": "Apna", "role": "QA Tester", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+QA+Tester+Remote+India"}, {"id": 475, "platform": "Apna", "role": "QA Automation Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+QA+Automation+Engineer+India"}, {"id": 476, "platform": "Apna", "role": "QA Automation Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+QA+Automation+Engineer+Remote+India"}, {"id": 477, "platform": "Apna", "role": "Test Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Test+Engineer+India"}, {"id": 478, "platform": "Apna", "role": "Test Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Test+Engineer+Remote+India"}, {"id": 479, "platform": "Apna", "role": "DevOps Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+DevOps+Engineer+India"}, {"id": 480, "platform": "Apna", "role": "DevOps Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+DevOps+Engineer+Remote+India"}, {"id": 481, "platform": "Apna", "role": "Cloud Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Cloud+Engineer+India"}, {"id": 482, "platform": "Apna", "role": "Cloud Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Cloud+Engineer+Remote+India"}, {"id": 483, "platform": "Apna", "role": "Data Analyst", "location": "India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Data+Analyst+India"}, {"id": 484, "platform": "Apna", "role": "Data Analyst", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Data+Analyst+Remote+India"}, {"id": 485, "platform": "Apna", "role": "Data Scientist", "location": "India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Data+Scientist+India"}, {"id": 486, "platform": "Apna", "role": "Data Scientist", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Data+Scientist+Remote+India"}, {"id": 487, "platform": "Apna", "role": "Machine Learning Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Machine+Learning+Engineer+India"}, {"id": 488, "platform": "Apna", "role": "Machine Learning Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Machine+Learning+Engineer+Remote+India"}, {"id": 489, "platform": "Apna", "role": "AI Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+AI+Engineer+India"}, {"id": 490, "platform": "Apna", "role": "AI Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+AI+Engineer+Remote+India"}, {"id": 491, "platform": "Apna", "role": "GenAI Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+GenAI+Engineer+India"}, {"id": 492, "platform": "Apna", "role": "GenAI Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+GenAI+Engineer+Remote+India"}, {"id": 493, "platform": "Apna", "role": "Data Engineer", "location": "India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Data+Engineer+India"}, {"id": 494, "platform": "Apna", "role": "Data Engineer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Data+Engineer+Remote+India"}, {"id": 495, "platform": "Apna", "role": "SQL Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+SQL+Developer+India"}, {"id": 496, "platform": "Apna", "role": "SQL Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+SQL+Developer+Remote+India"}, {"id": 497, "platform": "Apna", "role": "Android Developer", "location": "India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Android+Developer+India"}, {"id": 498, "platform": "Apna", "role": "Android Developer", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Android+Developer+Remote+India"}, {"id": 499, "platform": "Apna", "role": "Cybersecurity Analyst", "location": "India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Cybersecurity+Analyst+India"}, {"id": 500, "platform": "Apna", "role": "Cybersecurity Analyst", "location": "Remote India", "url": "https://www.google.com/search?q=site%3Aapna.co%2Fjobs+Cybersecurity+Analyst+Remote+India"}];
+
+    const state = {
+      page: 1,
+      perPage: 10,
+      query: "",
+      location: "",
+      platform: "",
+      role: ""
+    };
+
+    const searchInput = document.getElementById("searchInput");
+    const locationFilter = document.getElementById("locationFilter");
+    const platformFilter = document.getElementById("platformFilter");
+    const roleFilter = document.getElementById("roleFilter");
+    const resetBtn = document.getElementById("resetBtn");
+    const jobsGrid = document.getElementById("jobsGrid");
+    const pagination = document.getElementById("pagination");
+    const emptyState = document.getElementById("emptyState");
+    const resultsCount = document.getElementById("resultsCount");
+
+    document.getElementById("totalJobs").textContent = jobs.length;
+
+    function uniqueSorted(field) {
+      return [...new Set(jobs.map(job => job[field]))].sort((a, b) => a.localeCompare(b));
+    }
+
+    function fillSelect(select, values) {
+      values.forEach(value => {
+        const opt = document.createElement("option");
+        opt.value = value;
+        opt.textContent = value;
+        select.appendChild(opt);
+      });
+    }
+
+    fillSelect(locationFilter, uniqueSorted("location"));
+    fillSelect(platformFilter, uniqueSorted("platform"));
+    fillSelect(roleFilter, uniqueSorted("role"));
+
+    function filteredJobs() {
+      const q = state.query.toLowerCase().trim();
+
+      return jobs.filter(job => {
+        const haystack = `${job.role} ${job.platform} ${job.location}`.toLowerCase();
+        return (!q || haystack.includes(q))
+          && (!state.location || job.location === state.location)
+          && (!state.platform || job.platform === state.platform)
+          && (!state.role || job.role === state.role);
+      });
+    }
+
+    function getSaved() {
+      try {
+        return JSON.parse(localStorage.getItem("jobFinderSaved") || "[]");
+      } catch {
+        return [];
+      }
+    }
+
+    function setSaved(ids) {
+      localStorage.setItem("jobFinderSaved", JSON.stringify(ids));
+    }
+
+    function toggleSaved(id, button) {
+      const saved = getSaved();
+      const index = saved.indexOf(id);
+      if (index >= 0) {
+        saved.splice(index, 1);
+        button.classList.remove("saved");
+        button.textContent = "♡";
+      } else {
+        saved.push(id);
+        button.classList.add("saved");
+        button.textContent = "♥";
+      }
+      setSaved(saved);
+    }
+
+    function jobCard(job) {
+      const saved = getSaved().includes(job.id);
+      const safeRole = job.role.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const safePlatform = job.platform.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const safeLocation = job.location.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+      return `
+        <article class="job-card">
+          <div class="job-top">
+            <span class="platform-badge">${safePlatform}</span>
+            <span class="job-id">#${job.id}</span>
+          </div>
+
+          <h3>${safeRole}</h3>
+
+          <div class="meta">
+            <span>📍 ${safeLocation}</span>
+            <span>💼 Tech</span>
+            <span>🔎 Live search</span>
+          </div>
+
+          <p class="job-desc">
+            View current ${safeRole} opportunities on ${safePlatform} for ${safeLocation}.
+          </p>
+
+          <div class="job-actions">
+            <a class="view-btn" href="${job.url}" target="_blank" rel="noopener noreferrer">
+              View Jobs ↗
+            </a>
+            <button class="save-btn ${saved ? "saved" : ""}"
+                    type="button"
+                    title="Save search"
+                    aria-label="Save search"
+                    data-save-id="${job.id}">
+              ${saved ? "♥" : "♡"}
+            </button>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderPagination(totalPages) {
+      pagination.innerHTML = "";
+      if (totalPages <= 1) return;
+
+      const prev = document.createElement("button");
+      prev.className = "page-btn";
+      prev.textContent = "←";
+      prev.disabled = state.page === 1;
+      prev.addEventListener("click", () => {
+        state.page--;
+        render();
+        window.scrollTo({ top: 430, behavior: "smooth" });
+      });
+      pagination.appendChild(prev);
+
+      const maxButtons = 7;
+      let start = Math.max(1, state.page - 3);
+      let end = Math.min(totalPages, start + maxButtons - 1);
+      if (end - start < maxButtons - 1) {
+        start = Math.max(1, end - maxButtons + 1);
+      }
+
+      for (let i = start; i <= end; i++) {
+        const btn = document.createElement("button");
+        btn.className = `page-btn ${i === state.page ? "active" : ""}`;
+        btn.textContent = i;
+        btn.addEventListener("click", () => {
+          state.page = i;
+          render();
+          window.scrollTo({ top: 430, behavior: "smooth" });
+        });
+        pagination.appendChild(btn);
+      }
+
+      const next = document.createElement("button");
+      next.className = "page-btn";
+      next.textContent = "→";
+      next.disabled = state.page === totalPages;
+      next.addEventListener("click", () => {
+        state.page++;
+        render();
+        window.scrollTo({ top: 430, behavior: "smooth" });
+      });
+      pagination.appendChild(next);
+    }
+
+    function render() {
+      const result = filteredJobs();
+      const totalPages = Math.max(1, Math.ceil(result.length / state.perPage));
+
+      if (state.page > totalPages) state.page = totalPages;
+
+      const start = (state.page - 1) * state.perPage;
+      const visible = result.slice(start, start + state.perPage);
+
+      resultsCount.textContent = `${result.length} result${result.length === 1 ? "" : "s"} • Page ${state.page} of ${totalPages}`;
+
+      jobsGrid.innerHTML = visible.map(jobCard).join("");
+      emptyState.hidden = result.length !== 0;
+      jobsGrid.hidden = result.length === 0;
+
+      renderPagination(totalPages);
+
+      document.querySelectorAll("[data-save-id]").forEach(button => {
+        button.addEventListener("click", () => {
+          toggleSaved(Number(button.dataset.saveId), button);
+        });
+      });
+    }
+
+    searchInput.addEventListener("input", e => {
+      state.query = e.target.value;
+      state.page = 1;
+      render();
+    });
+
+    locationFilter.addEventListener("change", e => {
+      state.location = e.target.value;
+      state.page = 1;
+      render();
+    });
+
+    platformFilter.addEventListener("change", e => {
+      state.platform = e.target.value;
+      state.page = 1;
+      render();
+    });
+
+    roleFilter.addEventListener("change", e => {
+      state.role = e.target.value;
+      state.page = 1;
+      render();
+    });
+
+    resetBtn.addEventListener("click", () => {
+      state.query = "";
+      state.location = "";
+      state.platform = "";
+      state.role = "";
+      state.page = 1;
+
+      searchInput.value = "";
+      locationFilter.value = "";
+      platformFilter.value = "";
+      roleFilter.value = "";
+
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
